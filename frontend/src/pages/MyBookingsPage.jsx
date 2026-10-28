@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import StatusBadge from '../components/StatusBadge';
@@ -30,11 +30,7 @@ export default function MyBookingsPage() {
   const [rescheduleLoading, setRescheduleLoading] = useState(false);
   const [rescheduleError, setRescheduleError] = useState('');
 
-  useEffect(() => {
-    fetchBookings();
-  }, [activeTab]);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -51,7 +47,11 @@ export default function MyBookingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
 
   const handleCancelConfirm = async ({ reason }) => {
     if (!selectedBooking) return;
@@ -151,7 +151,7 @@ export default function MyBookingsPage() {
             No bookings found
           </div>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 16 }}>
-            No records found under the "{activeTab}" filter.
+            No records found under the &quot;{activeTab}&quot; filter.
           </div>
           <Link to="/resources" className="btn btn-outline" style={{ fontSize: '0.82rem' }}>
             Browse Campus Facilities

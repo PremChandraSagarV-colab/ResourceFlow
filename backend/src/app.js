@@ -6,25 +6,36 @@ const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const apiRouter = require('./routes');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
+const frontendDist = path.resolve(__dirname, '../../frontend/dist');
+
+// Trust the single reverse proxy used by platforms such as Render so request
+// IP based limits use the visitor address rather than the proxy address.
+if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 
 // Security headers
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginResourcePolicy: { policy: 'same-origin' },
+    contentSecurityPolicy: {
+      directives: {
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      },
+    },
   })
 );
 
 // CORS configuration for frontend
-const allowedOrigins = [
-  process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:5173',
-];
+const allowedOrigins = process.env.FRONTEND_ORIGIN
+  ? [process.env.FRONTEND_ORIGIN.replace(/\/$/, '')]
+  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
 
 app.use(
   cors({
@@ -54,11 +65,29 @@ if (process.env.NODE_ENV !== 'test') {
 // Mount API routes
 app.use('/api', apiRouter);
 
-// 404 handler for undefined API routes
-app.use((req, res) => {
+// Keep unknown API paths as JSON responses instead of returning the SPA shell.
+app.use('/api', (req, res) => {
   res.status(404).json({
     success: false,
     message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// In production, serve the built React app and support client-side routes.
+if (fs.existsSync(path.join(frontendDist, 'index.html'))) {
+  app.use(express.static(frontendDist));
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && req.accepts('html')) {
+      return res.sendFile(path.join(frontendDist, 'index.html'));
+    }
+    return next();
+  });
+}
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Endpoint not found: ${req.method} ${req.originalUrl}`,
   });
 });
 

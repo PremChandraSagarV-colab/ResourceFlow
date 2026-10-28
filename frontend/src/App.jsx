@@ -1,19 +1,21 @@
-import React from 'react';
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
 
 import Sidebar from './components/Sidebar';
 import TopHeader from './components/TopHeader';
-import LoginPage from './pages/LoginPage';
-import StudentDashboard from './pages/StudentDashboard';
-import ResourcesPage from './pages/ResourcesPage';
-import ResourceDetailPage from './pages/ResourceDetailPage';
-import MyBookingsPage from './pages/MyBookingsPage';
-import StudentProfilePage from './pages/StudentProfilePage';
-import ManagerDashboard from './pages/ManagerDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import UnauthorizedPage from './pages/UnauthorizedPage';
-import NotFoundPage from './pages/NotFoundPage';
+
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
+const ResourcesPage = lazy(() => import('./pages/ResourcesPage'));
+const ResourceDetailPage = lazy(() => import('./pages/ResourceDetailPage'));
+const MyBookingsPage = lazy(() => import('./pages/MyBookingsPage'));
+const StudentProfilePage = lazy(() => import('./pages/StudentProfilePage'));
+const ManagerDashboard = lazy(() => import('./pages/ManagerDashboard'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const UnauthorizedPage = lazy(() => import('./pages/UnauthorizedPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Route guards
 function ProtectedRoute({ children, allowedRoles }) {
@@ -53,63 +55,71 @@ export default function App() {
           <div className="main-layout">
             <TopHeader />
             <main className="content-workspace">
-              <Routes>
-                {/* Public & Discovery */}
-                <Route path="/" element={<HomeRedirect />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/resources" element={<ResourcesPage />} />
-                <Route path="/resources/:id" element={<ResourceDetailPage />} />
+              <Suspense
+                fallback={
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+                    <span className="spinner" />
+                  </div>
+                }
+              >
+                <Routes>
+                  {/* Public & Discovery */}
+                  <Route path="/" element={<HomeRedirect />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/resources" element={<ResourcesPage />} />
+                  <Route path="/resources/:id" element={<ResourceDetailPage />} />
 
-                {/* Student Protected Routes */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <StudentDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/my-bookings"
-                  element={
-                    <ProtectedRoute>
-                      <MyBookingsPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <StudentProfilePage />
-                    </ProtectedRoute>
-                  }
-                />
+                  {/* Student Protected Routes */}
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <StudentDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-bookings"
+                    element={
+                      <ProtectedRoute>
+                        <MyBookingsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <StudentProfilePage />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Manager Operations */}
-                <Route
-                  path="/manager"
-                  element={
-                    <ProtectedRoute allowedRoles={['manager', 'admin']}>
-                      <ManagerDashboard />
-                    </ProtectedRoute>
-                  }
-                />
+                  {/* Manager Operations */}
+                  <Route
+                    path="/manager"
+                    element={
+                      <ProtectedRoute allowedRoles={['manager', 'admin']}>
+                        <ManagerDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Administrator Portal */}
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
+                  {/* Administrator Portal */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute allowedRoles={['admin']}>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Error Pages */}
-                <Route path="/unauthorized" element={<UnauthorizedPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
+                  {/* Error Pages */}
+                  <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Suspense>
             </main>
           </div>
         </div>

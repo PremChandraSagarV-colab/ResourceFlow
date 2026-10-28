@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import api from '../services/api';
 import StatusBadge from '../components/StatusBadge';
 
@@ -26,12 +26,7 @@ export default function ResourceDetailPage() {
   const [bookingSuccess, setBookingSuccess] = useState('');
   const [bookingError, setBookingError] = useState('');
 
-  useEffect(() => {
-    fetchResource();
-    initDefaultDates();
-  }, [id]);
-
-  const initDefaultDates = () => {
+  const initDefaultDates = useCallback(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(10, 0, 0, 0);
@@ -46,9 +41,9 @@ export default function ResourceDetailPage() {
 
     setStartAt(toIsoLocal(tomorrow));
     setEndAt(toIsoLocal(tomorrowEnd));
-  };
+  }, []);
 
-  const fetchResource = async () => {
+  const fetchResource = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -61,7 +56,12 @@ export default function ResourceDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchResource();
+    initDefaultDates();
+  }, [fetchResource, initDefaultDates]);
 
   const checkAvailability = async () => {
     if (!startAt || !endAt) {

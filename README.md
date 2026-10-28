@@ -4,7 +4,7 @@
 > Engineered with Node.js, Express.js, MongoDB (Mongoose ODM), React (Vite SPA), and an atomic mutex concurrency reservation engine.
 
 [![Repository](https://img.shields.io/badge/GitHub-praneelp23%2FResourceFlow-7a0c2e?style=flat&logo=github)](https://github.com/praneelp23/ResourceFlow)
-[![Node.js](https://img.shields.io/badge/Node.js-v20%2B-339933?style=flat&logo=nodedotjs)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-v24%20LTS-339933?style=flat&logo=nodedotjs)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-v5.3-000000?style=flat&logo=express)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose%209-47A248?style=flat&logo=mongodb)](https://www.mongodb.com/)
 [![React](https://img.shields.io/badge/React-v18.3-61DAFB?style=flat&logo=react)](https://react.dev/)
@@ -26,9 +26,10 @@
 9. [Local Setup & Teammate Installation Guide](#local-setup--teammate-installation-guide)
 10. [Pre-Seeded Demo Credentials](#pre-seeded-demo-credentials)
 11. [Environment Variables Specification](#environment-variables-specification)
-12. [Automated Testing Suite](#automated-testing-suite)
-13. [Security Architecture & Hardening](#security-architecture--hardening)
-14. [Contributing & Teammate Workflow](#contributing--teammate-workflow)
+12. [Free Public Demo Deployment](#free-public-demo-deployment)
+13. [Automated Testing Suite](#automated-testing-suite)
+14. [Security Architecture & Hardening](#security-architecture--hardening)
+15. [Contributing & Teammate Workflow](#contributing--teammate-workflow)
 
 ---
 
@@ -75,8 +76,8 @@ It handles:
 | Technology | Version | Purpose |
 |---|---|---|
 | **React** | `^18.3.1` | Component-driven Single Page Application (SPA) |
-| **Vite** | `^5.4.10` | High-speed frontend build tool and dev server with HMR |
-| **React Router** | `^6.30.6` | Client-side routing, protected routes, and role guards |
+| **Vite** | `^8.3.5` | Frontend build tool and development server with HMR |
+| **React Router** | `^7.18.5` | Client-side routing, protected routes, and role guards |
 | **Axios** | `^1.20.0` | HTTP client with automatic Bearer token interceptor and centralized error normalization |
 | **Recharts** | `^3.10.1` | Declarative SVG charting library for administrator utilization metrics |
 | **Inter Font & Custom CSS** | Modern | Minimalist institutional UI system (clean slate background, white surfaces, deep maroon accents `#7a0c2e`, responsive layout) |
@@ -84,7 +85,7 @@ It handles:
 ### Backend Architecture
 | Technology | Version | Purpose |
 |---|---|---|
-| **Node.js** | `v20+` / `v24 LTS` | Asynchronous JavaScript runtime environment |
+| **Node.js** | `v24 LTS` | Runtime for the API, frontend build, and development server |
 | **Express.js** | `^5.3.0` | Fast, unopinionated REST API framework |
 | **Mongoose** | `^9.11.4` | Object Data Modeling (ODM) for MongoDB with schema validation and population |
 | **JSON Web Tokens (JWT)** | `^9.0.3` | Dual-token authentication (short-lived access tokens + refresh tokens) |
@@ -241,7 +242,7 @@ Request B:        [Check: Free] ────────────────
 When two students hit "Confirm Reservation" at the exact same millisecond, both requests check the database, find zero conflicts, and both insert conflicting records.
 
 ### The Solution: Atomic Distributed Mutex Locking
-ResourceFlow implements an **Atomic Per-Resource Serialization Engine** ([bookingLockService.js](file:///c:/Users/prann/OneDrive/Desktop/Skill-Lab/ResourceFlow/backend/src/services/bookingLockService.js)):
+ResourceFlow implements an **Atomic Per-Resource Serialization Engine** ([bookingLockService.js](backend/src/services/bookingLockService.js)):
 
 ```
 Request A: [Acquire Lock (UUID)] ──► [Assert No Conflicts] ──► [Write Booking] ──► [Release Lock]
@@ -347,13 +348,18 @@ Request B:       [Acquire Lock] (Blocked by Unique Index: E11000)
 ## Local Setup & Teammate Installation Guide
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (version `20.0.0` or higher; `v24 LTS` recommended)
+- [Node.js](https://nodejs.org/) (`v24 LTS` recommended)
 - [npm](https://www.npmjs.com/) (version `9.0.0` or higher)
 - [Git](https://git-scm.com/)
 
 ---
 
 ### Step-by-Step Quickstart
+
+#### Download the project
+
+- **Download a ZIP:** Open the [ResourceFlow GitHub repository](https://github.com/praneelp23/ResourceFlow), select **Code → Download ZIP**, then extract the ZIP folder.
+- **Clone with Git:** Run the commands below. If you want to show your own fork, use your fork's GitHub URL in place of the upstream URL.
 
 #### 1. Clone the Repository
 ```bash
@@ -386,7 +392,7 @@ npm run dev
 
 ## Pre-Seeded Demo Credentials
 
-The database automatically seeds realistic institutional test accounts. You can also use the **Quick Demo Fill** buttons on the login screen:
+The local development server seeds realistic institutional test accounts. The **Quick Demo Fill** buttons are shown only in development. For the public demo, visitors can register as students; staff accounts use the private password configured by the project owner.
 
 | Role | Email | Password | Access Capabilities |
 |---|---|---|---|
@@ -395,11 +401,13 @@ The database automatically seeds realistic institutional test accounts. You can 
 | **Facility Manager** | `manager@resourceflow.dev` | `AdminPass123!` | Pending approvals queue, physical check-outs/returns, maintenance scheduling |
 | **System Admin** | `admin@resourceflow.dev` | `AdminPass123!` | Master admin: user directory, role delegation, catalog CRUD, analytics |
 
+These are sample credentials for the local in-memory demo database. Do not use these sample passwords for accounts that contain real information.
+
 ---
 
 ## Environment Variables Specification
 
-The backend relies on the `.env` file located in `backend/.env`. A complete template is provided in [.env.example](file:///c:/Users/prann/OneDrive/Desktop/Skill-Lab/ResourceFlow/.env.example):
+The development server runs without an `.env` file: it starts a local in-memory database and creates temporary signing keys for that run. To use your own database or settings, copy the root [.env.example](.env.example) to `backend/.env` and replace the example values. Never publish real secrets. Database seeding runs only when `SEED_DEMO_DATA=true` and the target database is empty; it never clears existing data.
 
 ```ini
 # Server Configuration
@@ -411,10 +419,10 @@ PORT=5000
 MONGODB_URI=mongodb://localhost:27017/resourceflow
 MONGODB_TEST_URI=mongodb://localhost:27017/resourceflow_test
 
-# JWT Security
-JWT_SECRET=resourceflow_dev_jwt_secret_key_92837492837498237498237498237498
-JWT_EXPIRES_IN=1h
-JWT_REFRESH_SECRET=resourceflow_dev_refresh_secret_84920384029384029384029384029384
+# JWT Security (replace both placeholders with separate random secrets)
+JWT_SECRET=REPLACE_WITH_64_BYTE_HEX_SECRET
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=REPLACE_WITH_ANOTHER_64_BYTE_HEX_SECRET
 JWT_REFRESH_EXPIRES_IN=7d
 
 # Cookies & Cross-Origin
@@ -424,16 +432,23 @@ FRONTEND_ORIGIN=http://localhost:5173
 
 # Rate Limiting
 AUTH_RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
-AUTH_RATE_LIMIT_MAX=100           # max requests per IP
+AUTH_RATE_LIMIT_MAX=20            # max requests per IP
 
 # Bcrypt Password Hashing
-BCRYPT_ROUNDS=10
+BCRYPT_ROUNDS=12
 
 # Seeder Credentials
 SEED_ADMIN_NAME=Admin User
 SEED_ADMIN_EMAIL=admin@resourceflow.dev
-SEED_ADMIN_PASSWORD=AdminPass123!
+SEED_ADMIN_PASSWORD=REPLACE_WITH_STRONG_PASSWORD
+SEED_DEMO_DATA=false
 ```
+
+---
+
+## Free Public Demo Deployment
+
+The included [Render Blueprint](render.yaml) deploys the React app and API together. It needs a MongoDB Atlas connection string and a unique admin password, which are entered privately in the hosting dashboard. Follow the [free deployment guide](DEPLOYMENT.md) for setup and sharing instructions.
 
 ---
 

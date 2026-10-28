@@ -17,6 +17,11 @@ async function startServer() {
 
     // Connect to database
     await connectDB();
+
+    if (process.env.SEED_DEMO_DATA === 'true') {
+      const seed = require('../scripts/seed');
+      await seed({ keepConnection: true });
+    }
     registerShutdownHandlers();
 
     const server = app.listen(PORT, () => {

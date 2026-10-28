@@ -8,19 +8,30 @@ const Resource = require('../src/models/Resource');
 const Booking = require('../src/models/Booking');
 const MaintenanceRecord = require('../src/models/MaintenanceRecord');
 
-async function seed() {
+async function seed({ keepConnection = false } = {}) {
   console.log('[Seed] Starting ResourceFlow database seeding...');
 
   try {
     await connectDB();
 
-    console.log('[Seed] Connected to database. Clearing existing demo collections...');
-    await Promise.all([
-      User.deleteMany({}),
-      Resource.deleteMany({}),
-      Booking.deleteMany({}),
-      MaintenanceRecord.deleteMany({}),
-    ]);
+    const [userCount, resourceCount, bookingCount, maintenanceCount] =
+      await Promise.all([
+        User.countDocuments(),
+        Resource.countDocuments(),
+        Booking.countDocuments(),
+        MaintenanceRecord.countDocuments(),
+      ]);
+    if (userCount || resourceCount || bookingCount || maintenanceCount) {
+      console.log('[Seed] Database already contains data; leaving it unchanged.');
+      return false;
+    }
+
+    if (
+      process.env.NODE_ENV === 'production' &&
+      (!process.env.SEED_ADMIN_PASSWORD || process.env.SEED_ADMIN_PASSWORD.length < 16)
+    ) {
+      throw new Error('Set SEED_ADMIN_PASSWORD to a unique value of at least 16 characters.');
+    }
 
     // 1. Seed Users
     console.log('[Seed] Creating initial users with bcrypt hashes...');
@@ -279,16 +290,17 @@ async function seed() {
     console.log('\n======================================================');
     console.log('  🎉 Database Seeding Complete!');
     console.log('======================================================');
-    console.log('  Admin:   admin@resourceflow.dev   | Pass: ' + defaultPassword);
-    console.log('  Manager: manager@resourceflow.dev | Pass: ' + defaultPassword);
-    console.log('  Student: alex.johnson@student.edu | Pass: Student123!');
-    console.log('  Student: maya.patel@student.edu   | Pass: Student123!');
+    console.log('  Admin:   ' + (process.env.SEED_ADMIN_EMAIL || 'admin@resourceflow.dev'));
+    console.log('  Manager: manager@resourceflow.dev');
+    console.log('  Student: alex.johnson@student.edu');
+    console.log('  Student: maya.patel@student.edu');
     console.log('======================================================\n');
+    return true;
   } catch (err) {
     console.error('[Seed] Error during seeding:', err);
     process.exit(1);
   } finally {
-    await disconnectDB();
+    if (!keepConnection) await disconnectDB();
   }
 }
 

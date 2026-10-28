@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 
 const authRoutes = require('./authRoutes');
@@ -19,9 +20,10 @@ router.use('/analytics', analyticsRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    status: 'healthy',
+  const databaseConnected = mongoose.connection.readyState === 1;
+  res.status(databaseConnected ? 200 : 503).json({
+    success: databaseConnected,
+    status: databaseConnected ? 'healthy' : 'database unavailable',
     timestamp: new Date().toISOString(),
     service: 'ResourceFlow API',
   });

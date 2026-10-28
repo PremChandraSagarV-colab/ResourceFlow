@@ -1,6 +1,7 @@
 'use strict';
 
 require('dotenv').config();
+const crypto = require('node:crypto');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const app = require('../src/app');
@@ -8,6 +9,18 @@ const { validateEnv, registerShutdownHandlers } = require('../src/config/databas
 const seed = require('./seed');
 
 const PORT = parseInt(process.env.PORT, 10) || 5000;
+
+// Keep the zero-configuration demo login usable without asking students to
+// create secrets. These temporary keys are only for this local dev process.
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.startsWith('REPLACE_WITH_')) {
+  process.env.JWT_SECRET = crypto.randomBytes(64).toString('hex');
+}
+if (
+  !process.env.JWT_REFRESH_SECRET ||
+  process.env.JWT_REFRESH_SECRET.startsWith('REPLACE_WITH_')
+) {
+  process.env.JWT_REFRESH_SECRET = crypto.randomBytes(64).toString('hex');
+}
 
 async function startDevEnvironment() {
   console.log('\n======================================================');

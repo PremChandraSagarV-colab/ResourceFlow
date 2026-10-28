@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: resourceflow-praneelp23
+    runtime: node
+    plan: free
+    buildCommand: npm ci --omit=dev --prefix backend && npm ci --prefix frontend && npm run build --prefix frontend
+    startCommand: npm start --prefix backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.22.1
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: FRONTEND_ORIGIN
+        fromService:
+          name: resourceflow-praneelp23
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: COOKIE_SAME_SITE
+        value: Lax
+      - key: SEED_DEMO_DATA
+        value: "true"
+      - key: SEED_ADMIN_PASSWORD
+        sync: false

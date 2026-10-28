@@ -6,11 +6,27 @@ const REQUIRED_VARS = ['MONGODB_URI', 'JWT_SECRET'];
 
 function validateEnv() {
   const missing = REQUIRED_VARS.filter((v) => !process.env[v]);
+  if (process.env.NODE_ENV === 'production') {
+    for (const name of ['JWT_REFRESH_SECRET', 'FRONTEND_ORIGIN']) {
+      if (!process.env[name]) missing.push(name);
+    }
+  }
   if (missing.length) {
     throw new Error(
       `[Config] Missing required environment variables: ${missing.join(', ')}\n` +
         'Copy .env.example to .env and fill in the values.'
     );
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    for (const name of ['JWT_SECRET', 'JWT_REFRESH_SECRET']) {
+      if (process.env[name].startsWith('REPLACE_WITH_') || process.env[name].length < 32) {
+        throw new Error(`[Config] ${name} must be a unique secret with at least 32 characters.`);
+      }
+    }
+    if (process.env.COOKIE_SECURE !== 'true') {
+      throw new Error('[Config] COOKIE_SECURE must be true in production.');
+    }
   }
 }
 

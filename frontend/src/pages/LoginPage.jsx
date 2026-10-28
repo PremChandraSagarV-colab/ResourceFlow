@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
@@ -209,38 +209,39 @@ export default function LoginPage() {
               {loading ? <span className="spinner" /> : 'Sign In'}
             </button>
 
-            {/* Quick Demo Credentials */}
-            <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border-light)' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 10, textAlign: 'center' }}>
-                Quick Demo Fill
+            {import.meta.env.DEV && (
+              <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border-light)' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 10, textAlign: 'center' }}>
+                  Quick Demo Fill
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => fillDemoCredentials('student')}
+                    className="btn btn-outline"
+                    style={{ fontSize: '0.76rem', padding: '5px 8px' }}
+                  >
+                    Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fillDemoCredentials('manager')}
+                    className="btn btn-outline"
+                    style={{ fontSize: '0.76rem', padding: '5px 8px' }}
+                  >
+                    Manager
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fillDemoCredentials('admin')}
+                    className="btn btn-outline"
+                    style={{ fontSize: '0.76rem', padding: '5px 8px' }}
+                  >
+                    Admin
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => fillDemoCredentials('student')}
-                  className="btn btn-outline"
-                  style={{ fontSize: '0.76rem', padding: '5px 8px' }}
-                >
-                  Student
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillDemoCredentials('manager')}
-                  className="btn btn-outline"
-                  style={{ fontSize: '0.76rem', padding: '5px 8px' }}
-                >
-                  Manager
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillDemoCredentials('admin')}
-                  className="btn btn-outline"
-                  style={{ fontSize: '0.76rem', padding: '5px 8px' }}
-                >
-                  Admin
-                </button>
-              </div>
-            </div>
+            )}
           </form>
         ) : (
           <form onSubmit={handleRegisterSubmit}>

@@ -1,9 +1,8 @@
-import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 export default function Sidebar() {
-  const { user, isAuthenticated, isManager, isAdmin } = useAuth();
+  const { isAuthenticated, isManager, isAdmin } = useAuth();
 
   return (
     <aside className="sidebar">

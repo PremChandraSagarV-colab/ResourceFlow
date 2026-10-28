@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -26,7 +26,6 @@ export default function AdminDashboard() {
 
   // Resources State
   const [resources, setResources] = useState([]);
-  const [resourcesLoading, setResourcesLoading] = useState(false);
   const [createResourceModalOpen, setCreateResourceModalOpen] = useState(false);
 
   // New Resource Form
@@ -40,20 +39,13 @@ export default function AdminDashboard() {
 
   // Analytics State
   const [analytics, setAnalytics] = useState(null);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   // Confirmation Modal
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    if (activeTab === 'users') fetchUsers();
-    if (activeTab === 'resources') fetchResources();
-    if (activeTab === 'analytics') fetchAnalytics();
-  }, [activeTab, userPage, userRoleFilter, userStatusFilter]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setUsersLoading(true);
     try {
       let url = `/users?page=${userPage}&limit=10`;
@@ -71,10 +63,9 @@ export default function AdminDashboard() {
     } finally {
       setUsersLoading(false);
     }
-  };
+  }, [userPage, userSearch, userRoleFilter, userStatusFilter]);
 
-  const fetchResources = async () => {
-    setResourcesLoading(true);
+  const fetchResources = useCallback(async () => {
     try {
       const res = await api.get('/resources?limit=100');
       if (res.data?.success) {
@@ -82,13 +73,10 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       alert(err.message || 'Failed to load resources');
-    } finally {
-      setResourcesLoading(false);
     }
-  };
+  }, []);
 
-  const fetchAnalytics = async () => {
-    setAnalyticsLoading(true);
+  const fetchAnalytics = useCallback(async () => {
     try {
       const res = await api.get('/analytics/utilization');
       if (res.data?.success) {
@@ -96,10 +84,14 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.warn('Analytics fetch error:', err.message);
-    } finally {
-      setAnalyticsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'users') fetchUsers();
+    if (activeTab === 'resources') fetchResources();
+    if (activeTab === 'analytics') fetchAnalytics();
+  }, [activeTab, fetchUsers, fetchResources, fetchAnalytics]);
 
   const toggleUserStatus = (targetUser) => {
     const nextStatus = !targetUser.isActive;
