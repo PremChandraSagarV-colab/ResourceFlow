@@ -3,7 +3,7 @@ services:
     name: resourceflow-praneelp23
     runtime: node
     plan: free
-    buildCommand: npm ci --omit=dev --prefix backend && npm ci --prefix frontend && npm run build --prefix frontend
+    buildCommand: npm ci --omit=dev --prefix backend && npm ci --include=dev --prefix frontend && npm run build --prefix frontend
     startCommand: npm start --prefix backend
     healthCheckPath: /api/health
     envVars:
