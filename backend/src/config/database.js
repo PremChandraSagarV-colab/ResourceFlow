@@ -59,7 +59,11 @@ async function connectDB(uri) {
     console.warn('[DB] MongoDB disconnected.')
   );
 
-  _connection = await mongoose.connect(dbUri, connectionOptions);
+  const options = process.env.NODE_ENV === 'production'
+    ? { ...connectionOptions, dbName: process.env.MONGODB_DATABASE || 'resourceflow' }
+    : connectionOptions;
+
+  _connection = await mongoose.connect(dbUri, options);
   return _connection;
 }
 
